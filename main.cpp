@@ -47,10 +47,10 @@ int main(int argc, char const *argv[])
 
 	m.setBig("out2.txt");
 	cout << "big : ";
-	 for (vector<vector<double> >::iterator it = m.big.begin() ; it != m.big.end(); ++it){
-	for (vector<double>::iterator it2 = it->begin() ; it2 != it->end(); ++it)
-	    cout << ' ' << *it2;
-	  cout << endl;
+	for (int i = 0 ; i < m.keyNumber; ++i){
+		for (int j = 0; j < m.keyNumber; ++j)
+		    cout << ' ' << m.big[i][j];
+	  cout <<  endl;
 
 	}
 	  cout << endl;

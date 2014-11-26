@@ -132,23 +132,32 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 		int currentIndex, index;		
 		double total = this->keyNumber; 
 		double nbr;
+		bool flag = true;
 		vector<vector<double> > bigram(this->keyNumber, vector<double>(this->keyNumber, 1));
 				
 	
 		while(getline(input, tmp)){
 			caract1 = tmp.substr(0,1);
-			if(current != "" && caract1 != current){ //We have take care of every bigram that begin by current.
+			if(current != "" && caract1 != current){ //We have take care of every bigram that begin by current.		
 				for(int i = 0; i < this->keyNumber; ++i){
-					bigram[currentIndex][i] /= total;					
+					bigram[currentIndex][i] /= total;		// normation			
 				}
 				total = this->keyNumber;
 			}
 			if(current == "" || caract1 != current){	
-				do{
-					currentIndex = this->alphabet.find_first_of(caract1);
-				}while(currentIndex == string::npos && getline(input,tmp)); //If the first letter of the bigram is not in the alphabet we skip line until we find a nice one			
-				current = caract1;								
+				current = tmp.substr(0,1);
+				currentIndex = this->alphabet.find_first_of(current);
+				
+				while(currentIndex == string::npos){
+					flag = getline(input, tmp);
+					if(!flag)
+						break;				
+					current = tmp.substr(0,1);
+					currentIndex = this->alphabet.find_first_of(current);
+				} //If the first letter of the bigram is not in the alphabet we skip line until we find a nice one									
 			}
+			if(!flag)						
+				break;
 
 			caract2 = tmp.substr(1,1); //second caracter
 			nbr = atof(tmp.substr(3).c_str());
@@ -157,7 +166,15 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 				bigram[currentIndex][index] += nbr;
 				total += nbr;					
 			}
-		}		
+		}
+		
+		for(int i = 0; i < this->keyNumber; ++i){ //Last Verification if a caracter is not present in the first caract of any bigram we norm manually	
+			if(bigram[i][0] == 1){
+				for(int j = 0; j < this->keyNumber; ++j){
+					bigram[i][j] /= this->keyNumber;
+				}
+			}
+		} 
 		this->big = bigram;	
 	}
 }
