@@ -78,19 +78,86 @@ DataModel::DataModel(const char* filename){
 			}		
 		}
 		this->ks = keyToStrength;
-/*
+
 		//Distance
 		getline(input, tmp);
 		vector<string> distance = split(tmp.substr(3), " ");
-		vector<int> distInt(this->keyNumber - 1, 0);
-		for(int i = 0; i < this->keyNumber; ++i){
+		vector<int> distInt(this->keyNumber, 0);
+		for(int i = 0; i < distance.size() ; ++i){
 			distInt[i] = atoi(distance[i].c_str());
 		}		
-*/
+		this->dk = distInt;
 
 	}
 }
 
 
+void DataModel::setFreq(const char* filename){
+	ifstream input;
+	input.open(filename);
 
+	if(input.is_open()) {
+		double total = this->keyNumber;
+		string tmp;
+		string caract;
+		int index;
+		double nbr;
+		vector<double> freq(this->keyNumber, 1); //Init of every counter at 1
 
+		while(getline(input, tmp)){ // Add the counting
+			caract = tmp.substr(0,1);
+			nbr = atof(tmp.substr(2).c_str());
+			index = this->alphabet.find_first_of(caract);
+			
+			if(index != string::npos){
+				freq[index] += nbr;
+				total += nbr;
+			}				
+		}		
+		
+		for(int i = 0; i < freq.size(); ++i){
+			freq[i] /= total;
+		}		
+		this->fr = freq;	
+	}
+}
+
+void DataModel::setBig(const char* filename){ //Here we take into account that the element in the file are ordered !
+	ifstream input;
+	input.open(filename);
+	
+	if(input.is_open()){
+		string tmp;
+		string current = "", caract1, caract2;
+		int currentIndex, index;		
+		double total = this->keyNumber; 
+		double nbr;
+		vector<vector<double> > bigram(this->keyNumber, vector<double>(this->keyNumber, 1));
+				
+	
+		while(getline(input, tmp)){
+			caract1 = tmp.substr(0,1);
+			if(current != "" && caract1 != current){ //We have take care of every bigram that begin by current.
+				for(int i = 0; i < this->keyNumber; ++i){
+					bigram[currentIndex][i] /= total;					
+				}
+				total = this->keyNumber;
+			}
+			if(current == "" || caract1 != current){	
+				do{
+					currentIndex = this->alphabet.find_first_of(caract1);
+				}while(currentIndex == string::npos && getline(input,tmp)); //If the first letter of the bigram is not in the alphabet we skip line until we find a nice one			
+				current = caract1;								
+			}
+
+			caract2 = tmp.substr(1,1); //second caracter
+			nbr = atof(tmp.substr(3).c_str());
+			index = this->alphabet.find_first_of(caract2);
+			if(index != string::npos){
+				bigram[currentIndex][index] += nbr;
+				total += nbr;					
+			}
+		}		
+		this->big = bigram;	
+	}
+}
