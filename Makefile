@@ -13,15 +13,15 @@ CPPLIB   = -L/Library/gurobi563/mac64/lib/ -lgurobi_c++ -lgurobi56 $(CPPSTDLIB)
 
 all: main
 
-run: run_c++
+#run: run_c++
 
-run_c++: run_main
+#run_c++: run_main
 
 main: main.cpp
 	$(CPP) $(CARGS) -o main main.cpp -I$(INC) $(CPPLIB) -lpthread -lm
 
-run_main: main
-	./main
+#run_main: main
+#	./main
 
 clean:
 	rm -rf *.o *_c *_c++ *.class *.log *.rlp *.lp *.bas *.ilp *.dSYM
