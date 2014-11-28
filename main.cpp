@@ -8,9 +8,8 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-<<<<<<< HEAD
 	/**
-	 * Parsing
+	 * ============== Parsing ============== 
 	 */
 
 	int K = 47;
@@ -66,7 +65,7 @@ int main(int argc, char const *argv[])
 	  cout << endl;
 
 	/**
-	 * Computation
+	 * ============== Computation ============== 
 	 */
 	try{
 		// Set new environment
