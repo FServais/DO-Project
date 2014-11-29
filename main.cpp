@@ -170,7 +170,6 @@ int main(int argc, char const *argv[])
 		 */
 		cout << "Creating constraints" << endl;
 
-		cout << "	Side constraint" << endl;
 		GRBLinExpr side_constr;
 		for (int l = 0; l < sizeAlphabet; ++l)
 		{
@@ -183,7 +182,6 @@ int main(int argc, char const *argv[])
 		}
 		model.addConstr(side_constr >= 0, "side_constraint");
 
-		cout << "	One key per letter" << endl;
 		// One key per letter
 		for (int l = 0; l < sizeAlphabet; ++l)
 		{
@@ -195,7 +193,6 @@ int main(int argc, char const *argv[])
 			model.addConstr(keyPerLetter == 1, "One key per letter");
 		}
 
-		cout << "	One letter per key" << endl;
 		// One letter per key
 		for (int k = 0; k < numberKeys; ++k)
 		{
@@ -207,7 +204,6 @@ int main(int argc, char const *argv[])
 			model.addConstr(letterPerKey == 1, "One letter per key");
 		}
 
-		cout << "	Vowels on the same hand" << endl;
 		// Vowels on the same hand
 		GRBLinExpr vowels_side;
 		for (int l = 0; l < sizeAlphabet; ++l)
@@ -221,14 +217,81 @@ int main(int argc, char const *argv[])
 		}
 		model.addConstr(vowels_side == numberVowels * vl, "Vowels on the same hand");
 
-		
+		model.optimize();
 
+		/*
+		// Row generation
+		
+		int numberOfAddedContraints = 0;
+		bool constr_violated = true;
+
+		// Links between the variables
+		vector<GRBLinExpr> li(sizeAlphabet);
+		for (int i = 0; i < sizeAlphabet; ++i)
+			for (int k = 0; k < numberKeys; ++k)
+				li[i] += (kb[k][i] * sl[k]);
+
+		vector<GRBLinExpr> lj(sizeAlphabet);
+		for (int j = 0; j < sizeAlphabet; ++j)
+			for (int k = 0; k < numberKeys; ++k)
+				lj[j] += (kb[k][j] * sl[k]);
+
+		vector<vector<GRBLinExpr> > constraints_XOR1(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR2(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR3(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR4(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+
+		for (int i = 0; i < sizeAlphabet; ++i)
+		{
+			for (int j = 0; j < sizeAlphabet; ++j)
+			{
+				constraints_XOR1[i][j] = li[i] + lj[j];
+				constraints_XOR2[i][j] = li[i] - lj[j];
+				constraints_XOR3[i][j] = lj[j] - li[i];
+				constraints_XOR4[i][j] = 2 - li[i] - lj[j];
+			}
+		}
+
+		vector<vector<bool> > added_XOR1(sizeAlphabet, vector<bool>(sizeAlphabet, false));
+		vector<vector<bool> > added_XOR2(sizeAlphabet, vector<bool>(sizeAlphabet, false));
+		vector<vector<bool> > added_XOR3(sizeAlphabet, vector<bool>(sizeAlphabet, false));
+		vector<vector<bool> > added_XOR4(sizeAlphabet, vector<bool>(sizeAlphabet, false));
+
+		do{
+			numberOfAddedContraints = 0;
+			// Checking of contraints are violated
+			for (int i = 0; i < sizeAlphabet && numberOfAddedContraints < 10; ++i)
+			{
+				for (int j = 0; j < sizeAlphabet && numberOfAddedContraints < 10; ++j)
+				{
+					if(added_XOR1[i][j])
+						continue;
+
+					if(!(a[i][j].get(GRB_DoubleAttr_X) <= constraints_XOR1[i][j].getValue())){
+						model.addConstr(a[i][j] <= li[i] + lj[j], "XOR1");
+						numberOfAddedContraints++;
+						added_XOR1[i][j] = true;
+					}	
+				}
+			}
+
+			if(numberOfAddedContraints > 0)
+				model.optimize();
+
+		}while(numberOfAddedContraints > 0);
+
+			//model.addConstr(a[i][j] <= li[i] + lj[j], "XOR1");
+			//model.addConstr(a[i][j] >= li[i] - lj[j], "XOR2");
+			//model.addConstr(a[i][j] >= lj[j] - li[i], "XOR3");
+			//model.addConstr(a[i][j] <= 2 - li[i] - lj[j], "XOR4");		
+		*/
+		
 		/**
 		 * Solve
 		 */
-		cout << "Solving" << endl;
-		model.optimize();
-		cout << "End of solving" << endl;
+		//cout << "Solving" << endl;
+		//model.optimize();
+		//cout << "End of solving" << endl;
 
 		/**
 		 * Print
@@ -253,7 +316,6 @@ int main(int argc, char const *argv[])
 		cout << endl;
 
 		cout << "Objective function = " << model.get(GRB_DoubleAttr_ObjVal) << endl;
- 
 
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;
