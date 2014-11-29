@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <sstream>
+#include <vector>
 
 #include "gurobi_c++.h"
 #include "parser.hpp"
@@ -12,10 +13,8 @@ int main(int argc, char const *argv[])
 	 * ============== Parsing ============== 
 	 */
 
-	int K = 47;
-	int L = K;
-
-	DataModel m("datas");
+	 DataModel m("datas");
+	/*
 	cout << "Number of Keys : " << m.keyNumber;
 	cout << endl;
 	cout << "Set of the letters : " << m.alphabet;
@@ -47,14 +46,16 @@ int main(int argc, char const *argv[])
 	 for (vector<int>::iterator it = m.dk.begin() ; it != m.dk.end(); ++it)
 	    cout << ' ' << *it;
 	  cout << endl;
-
-	m.setFreq("out1.txt");
+	*/
+	  m.setFreq("out1.txt");
+	/*
 	cout << "fr : ";
 	 for (vector<double>::iterator it = m.fr.begin() ; it != m.fr.end(); ++it)
 	    cout << ' ' << *it;
 	  cout << endl;
-
-	m.setBig("out2.txt");
+	*/
+	  m.setBig("out2.txt");
+	/*
 	cout << "big : ";
 	for (int i = 0 ; i < m.keyNumber; ++i){
 		for (int j = 0; j < m.keyNumber; ++j)
@@ -63,26 +64,196 @@ int main(int argc, char const *argv[])
 
 	}
 	  cout << endl;
+	*/
+	int numberKeys = m.getNumberKeys();
+	int sizeAlphabet = numberKeys;
+	int numberVowels = m.getNumberVowels();
+
+	vector<int> dk = m.getDistanceKey();
+	vector<double> fr = m.getFrequencies();
+	vector<double> ks = m.getStrength();
+	vector<int> sl = m.getLeftHandKeys();
+	vector<int> sr = m.getRightHandKeys();
+	vector<int> v = m.getLeftSideLetters(); 
+
+	vector<double> dif(dk.size());
+	for (int i = 0; i < dk.size() ; ++i)
+		dif[i] = dk[i]*ks[i];
+
+	vector<vector<double> > w = m.getBigramsFreq();
 
 	/**
-	 * ============== Computation ============== 
+	 * ==============  Computation ============== 
 	 */
 	try{
 		// Set new environment
+		cout << "Creating environment" << endl;
 		GRBEnv env = GRBEnv();
 
 		// Create new model
+		cout << "Creating model" << endl;
 		GRBModel model = GRBModel(env);
 
-		// Variables
+		/**
+		 * Variables
+		 */
+		cout << "Creating variables" << endl;
+		vector<vector<GRBVar> > kb(numberKeys, vector<GRBVar>(sizeAlphabet)); // Assignment of the letters with the keys
+		GRBVar vl; // Vowel on the left side or not
+		vector<vector<GRBVar> > a(numberKeys, vector<GRBVar>(sizeAlphabet)); // Not the same hand to type one then another
+
 		// kb_{k,l}
-		for (int i = 0; i < K; ++i){
-			for (int j = 0; j < L; ++j){
+		for (int k = 0; k < numberKeys; ++k){
+			for (int l = 0; l < sizeAlphabet; ++l){
 				stringstream ss;
-				ss << "k_" << i << "_" << j;
-				GRBVar kij = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+				ss << "kb_" << k << "_" << l;
+				kb[k][l] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
 			}
 		}
+
+		// vl
+		vl = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "vl");
+
+		// a
+		for (int k = 0; k < numberKeys; ++k){
+			for (int l = 0; l < sizeAlphabet; ++l){
+				stringstream ss;
+				ss << "a_" << k << "_" << l;
+				a[k][l] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+			}
+		}
+
+		model.update();
+
+		/**
+		 * Objective function
+		 */
+		cout << "Creating objective function" << endl;
+		GRBLinExpr objFunction;
+
+		// First term
+		for (int i = 0; i < sizeAlphabet; ++i){
+			GRBLinExpr term;
+
+			for (int j = 0; j < numberKeys; ++j)
+				term += (dif[j] * kb[j][i]);
+
+			term *= fr[i];
+			objFunction += term;
+		}
+
+		// Second term
+		for (int i = 0; i < sizeAlphabet; ++i)
+			for (int j = 0; j < sizeAlphabet; ++j)
+				objFunction += (w[i][j] * (1 - a[i][j]));
+
+		// Third term
+		for (int i = 0; i < sizeAlphabet; ++i){
+			for (int j = 0; j < sizeAlphabet; ++j){
+				GRBLinExpr term;
+
+				for (int k = 0; k < numberKeys; ++k)
+					term += (dk[k] * kb[k][i]);
+
+				for (int l = 0; l < numberKeys; ++l)
+					term += (dk[l] * kb[l][j]);
+				
+
+				objFunction += (term * w[i][j]);
+			}
+		}
+
+		model.setObjective(objFunction, GRB_MINIMIZE);
+
+		/**
+		 * Contraints
+		 */
+		cout << "Creating constraints" << endl;
+
+		cout << "	Side constraint" << endl;
+		GRBLinExpr side_constr;
+		for (int l = 0; l < sizeAlphabet; ++l)
+		{
+			GRBLinExpr term;
+
+			for (int k = 0; k < numberKeys; ++k)
+				term += (kb[k][l] * (sr[k] - sl[k]));
+
+			side_constr += (term * fr[l]);
+		}
+		model.addConstr(side_constr >= 0, "side_constraint");
+
+		cout << "	One key per letter" << endl;
+		// One key per letter
+		for (int l = 0; l < sizeAlphabet; ++l)
+		{
+			GRBLinExpr keyPerLetter;
+			
+			for (int k = 0; k < numberKeys; ++k)
+				keyPerLetter += kb[k][l];
+			
+			model.addConstr(keyPerLetter == 1, "One key per letter");
+		}
+
+		cout << "	One letter per key" << endl;
+		// One letter per key
+		for (int k = 0; k < numberKeys; ++k)
+		{
+			GRBLinExpr letterPerKey;
+			
+			for (int l = 0; l < sizeAlphabet; ++l)
+				letterPerKey += kb[k][l];
+			
+			model.addConstr(letterPerKey == 1, "One letter per key");
+		}
+
+		cout << "	Vowels on the same hand" << endl;
+		// Vowels on the same hand
+		GRBLinExpr vowels_side;
+		for (int l = 0; l < sizeAlphabet; ++l)
+		{
+			GRBLinExpr term;
+
+			for (int k = 0; k < numberKeys; ++k)
+				term += (kb[k][l] * sl[k]);
+
+			vowels_side += (term * v[l]);
+		}
+		model.addConstr(vowels_side == numberVowels * vl, "Vowels on the same hand");
+
+		
+
+		/**
+		 * Solve
+		 */
+		cout << "Solving" << endl;
+		model.optimize();
+		cout << "End of solving" << endl;
+
+		/**
+		 * Print
+		 */
+		cout << "======== kb ========" << endl;
+		for (int k = 0; k < numberKeys; ++k)
+			for (int l = 0; l < sizeAlphabet; ++l)
+				cout << kb[k][l].get(GRB_StringAttr_VarName) << " = " << kb[k][l].get(GRB_DoubleAttr_X) << endl;
+
+		cout << endl;
+
+		cout << "======== vl ========" << endl;
+		cout << vl.get(GRB_StringAttr_VarName) << " = " << vl.get(GRB_DoubleAttr_X) << endl;
+
+		cout << endl;
+
+		cout << "======== a ========" << endl;
+		for (int i = 0; i < sizeAlphabet; ++i)
+			for (int j = 0; j < sizeAlphabet; ++j)
+				cout << a[i][j].get(GRB_StringAttr_VarName) << " = " << a[i][j].get(GRB_DoubleAttr_X) << endl;
+
+		cout << endl;
+
+		cout << "Objective function = " << model.get(GRB_DoubleAttr_ObjVal) << endl;
+ 
 
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;
@@ -90,6 +261,7 @@ int main(int argc, char const *argv[])
 	} catch(...){
 		cout << "Exception during optimization" << endl;
 	}
+
 
 	
 	return 0;

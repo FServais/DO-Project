@@ -24,7 +24,7 @@ DataModel::DataModel(const char* filename){
 		int count;
 
 
-		//Get Ke
+		//Get the number of keys
 		getline(input, tmp);
 		tmp = tmp.substr(3);
 		this->keyNumber = atoi(tmp.c_str());
@@ -38,9 +38,11 @@ DataModel::DataModel(const char* filename){
 		getline(input, tmp);
 		tmp = tmp.substr(3);
 		stringTab1 = split(tmp, " "); //Left side
+
 		getline(input, tmp);
 		tmp = tmp.substr(3);		
-		stringTab2 = split(tmp, " "); //Rigth side
+		stringTab2 = split(tmp, " "); //Right side
+
 		vector<int> tmp1(this->keyNumber, 0), tmp2(this->keyNumber,0); //Vectors with only 0
 		for(int i = 0; i < stringTab1.size(); ++i){
 			tmp1[atoi(stringTab1[i].c_str())] = 1;
@@ -62,8 +64,9 @@ DataModel::DataModel(const char* filename){
 		}
 		this->vl = tmp3;
 
-		getline(input, tmp);
-		this->vowelsNumber = atoi(tmp.substr(3).c_str());
+		//getline(input, tmp);
+		//this->vowelsNumber = atoi(tmp.substr(3).c_str());
+		this->vowelsNumber = this->vowels.size();
 
 		//Finger and strength
 		getline(input, tmp);

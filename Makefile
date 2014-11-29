@@ -17,8 +17,8 @@ all: main
 
 #run_c++: run_main
 
-main: main.cpp
-	$(CPP) $(CARGS) -o main main.cpp -I$(INC) $(CPPLIB) -lpthread -lm
+main: main.cpp parser.cpp
+	$(CPP) $(CARGS) -o main main.cpp parser.cpp -I$(INC) $(CPPLIB) -lpthread -lm
 
 #run_main: main
 #	./main
