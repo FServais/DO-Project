@@ -2,16 +2,11 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 #include <stdlib.h>
 
-
-#ifndef _H_PARSER
-#define _H_PARSER A
-
 #include "gurobi_c++.h"
-#include "Callback.hpp"
-
 
 using namespace std;
 
@@ -51,10 +46,9 @@ public:
 
 	void setFreq(const char* filename);
 	void setBig(const char* filename);
-	void frequencyZone(vector<vector<GRBVar> >);
+	void frequencyZone(vector<vector<GRBVar> >& kb);
 };
 
 vector<string> split(string toSplit, string delimiter);
 
 
-#endif

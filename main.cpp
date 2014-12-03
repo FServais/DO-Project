@@ -306,12 +306,12 @@ int main(int argc, char const *argv[])
 		/**
 		 * Print
 		 */
-		
+		/*	
 		cout << "======== kb ========" << endl;
 		for (int k = 0; k < numberKeys; ++k)
 			for (int l = 0; l < sizeAlphabet; ++l)
 				cout << kb[k][l].get(GRB_StringAttr_VarName) << " = " << kb[k][l].get(GRB_DoubleAttr_X) << endl;
-			/*
+	
 		cout << endl;
 		
 		cout << "======== vl ========" << endl;
@@ -351,6 +351,10 @@ int main(int argc, char const *argv[])
 			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
 		}
 		cout << endl;
+		cout << endl;
+
+		cout << "Statistic results : " << endl;
+		m.frequencyZone(kb);
 		
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;

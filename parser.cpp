@@ -131,6 +131,7 @@ void DataModel::setFreq(const char* filename){
 			it++;
 		}
 
+
 		this->fr = freq;
 	}
 }
@@ -192,18 +193,19 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 }
 
 
-void DataModel::frequencyZone(vector<vector<GRBVar> >){
+void DataModel::frequencyZone(vector<vector<GRBVar> >& kb){
 /* 	row 1 = 0 - 11
 	row 2 = 12 - 23
 	row 3 = 24 - 35
 	row 4 = 36 - 46
 */	
  // kb[k][l].get(GRB_DoubleAttr_X) k key, l letter
-	int rows[4];
-	int left, right;	
+	double rows[4] = {0.0, 0.0, 0.0, 0.0};
+	double left = 0.0, right = 0.0;
+
 	for(int k = 0; k < this->keyNumber; ++k) {
 		for(int l = 0; l < this->keyNumber; ++l) {
-			if(abs(kb[k][l].get(GRB_DoubleAttr_X) - 1.0) < 0.0000000000001){ //If we are on a winning k,l pair
+			if(abs(kb[k][l].get(GRB_DoubleAttr_X) - 1.0) < 0.00000000001){ //If we are on a winning k,l pair
 				//Rows				
 				int row = k / 12; //Except the last one each row are 12 keys long
 				rows[row] += this->fr[l];
@@ -216,11 +218,10 @@ void DataModel::frequencyZone(vector<vector<GRBVar> >){
 			}
 		}
 	}
-	
 
 	for(int i = 0;  i < 4; ++i)
-		cout << "Row " << i << " : " << rows[i] << endl;
+		cout << "Row " << i << " : " << rows[i] *100 << "%" << endl;
 
-	cout << "Left Hand : " << left << endl;
-	cout << "Right Hand : " << right << endl;
+	cout << "Left Hand : " << left *100 << "%" << endl;
+	cout << "Right Hand : " << right *100 << "%" << endl;
 }
