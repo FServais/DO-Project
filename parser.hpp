@@ -15,7 +15,9 @@ public:
 	 * vowelsNumber : Number of vowels
 	 */
 	int keyNumber, vowelsNumber;
-	string alphabet, vowels;
+	//string alphabet, vowels;
+	string vowels;
+	vector<string> alphabet;
 	vector<int> sr, sl,	         // sX[i] = 1 if key i is on hand X
 			    vl,		 	// vl[i] = 1 if the letter i is a vowel
 			    dk;			// dk[i] = distance that the finger attributed to the key i has to cross to reach that key		
@@ -24,12 +26,12 @@ public:
 				   fr;		// fr[i] = frequence of the key i in the language
 
 	
-	DataModel(const char* filename);
+	DataModel(const char* datafile, const char* freq_file, const char* bigram_file);
 
 	int getNumberKeys(){ return keyNumber; }
 	int getNumberVowels(){ return vowelsNumber; }
 
-	string getAlphabet(){ return alphabet; }
+	vector<string> getAlphabet(){ return alphabet; }
 	
 	vector<int> getDistanceKey() { return dk; }
 	vector<int> getLeftHandKeys(){ return sl; }

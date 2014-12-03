@@ -1,5 +1,12 @@
 #include "parser.hpp"
+#include <algorithm>
 
+struct sort_second_pair
+{
+	bool operator()(const pair<string, int> &left, const pair<string, int> &right){
+		return left.second > right.second;
+	}
+};
 
 vector<string> split(string toSplit, string delimiter){
 	vector<string> returnS;
@@ -7,32 +14,28 @@ vector<string> split(string toSplit, string delimiter){
 	size_t next = -1;
 	do
 	{
-	  current = next + 1;
-	  next = toSplit.find_first_of(delimiter, current);
-	  returnS.push_back(toSplit.substr(current, next - current));
+		current = next + 1;
+		next = toSplit.find_first_of(delimiter, current);
+		returnS.push_back(toSplit.substr(current, next - current));
 	}while (next != string::npos);
 	return returnS;
 }
 
-DataModel::DataModel(const char* filename){	
+DataModel::DataModel(const char* datafile, const char* freq_file, const char* bigram_file){	
+	keyNumber = 47;
+	setFreq(freq_file);
+
 	ifstream input;
-	input.open(filename);
+	input.open(datafile);
 
 	if(input.is_open()) {
 		string tmp;
 		vector<string> stringTab1, stringTab2;	
 		int count;
-
-
-		//Get the number of keys
-		getline(input, tmp);
-		tmp = tmp.substr(3);
-		this->keyNumber = atoi(tmp.c_str());
 	
 		//Get alphabet
 		getline(input, tmp);
-		this->alphabet = tmp.substr(3);
-
+		//this->alphabet = tmp.substr(3);
 		
 		//Hands sr and sl	
 		getline(input, tmp);
@@ -60,11 +63,14 @@ DataModel::DataModel(const char* filename){
 
 		vector<int> tmp3(this->keyNumber, 0);		
 		for(int i = 0; i < tmp.size(); ++i){
-			int index =  this->alphabet.find_first_of(tmp[i]);
+			string s(tmp[i],1);
+			int index = find(alphabet.begin(), alphabet.end(), s) - alphabet.begin();
 			tmp3[index] = 1;
 		}
-		this->vl = tmp3; // = 1 if the letter is a vowel
+		this->vl = tmp3;
 
+		//getline(input, tmp);
+		//this->vowelsNumber = atoi(tmp.substr(3).c_str());
 		this->vowelsNumber = this->vowels.size();
 
 		//Finger and strength
@@ -91,49 +97,51 @@ DataModel::DataModel(const char* filename){
 		this->dk = distInt;
 
 	}
+
+	setBig(bigram_file);
 }
 
 
 void DataModel::setFreq(const char* filename){
 	ifstream input;
 	input.open(filename);
-
 	if(input.is_open()) {
 		
-		double total = this->keyNumber;
-		string tmp;
-		string caract;
-		int index;
-		double nbr;
-		vector<double> freq(this->keyNumber, 1); //Init of every counter at 1
+		string line;
+		int total = 0;
+		vector<pair<string, int> > freqs;
 
-		while(getline(input, tmp)){ // Add the counting
-			caract = tmp.substr(0,1);
-			nbr = atof(tmp.substr(2).c_str());
-			index = this->alphabet.find_first_of(caract);
-			
-			if(index != string::npos){
-				freq[index] += nbr;
-				total += nbr;
-			}				
-		}		
-		
-		for(int i = 0; i < freq.size(); ++i){
-			freq[i] /= total;
-		}		
+		while(getline(input, line)){
+			vector<string> splitted = split(line, " "); // 2 parts : <char ; freq>
+
+			int f = atoi(splitted[1].c_str());
+
+			total += f;
+			freqs.push_back(make_pair(splitted[0], f));
+		}
+
+		sort(freqs.begin(), freqs.end(), sort_second_pair());
+
+		vector<pair<string, int> >::iterator it = freqs.begin();
+		vector<double> freq(this->keyNumber, 0);
+
+		for (int i = 0; i < this->keyNumber && it != freqs.end() ; ++i){
+			this->alphabet.push_back(it->first);
+			freq[i] = (double)it->second / (double)total;
+			it++;
+		}
+
 		this->fr = freq;
-	
 	}
 }
 
 void DataModel::setBig(const char* filename){ //Here we take into account that the element in the file are ordered !
 	ifstream input;
 	input.open(filename);
-	
 	if(input.is_open()){
 		string tmp;
 		string current = "", caract1, caract2;
-		int currentIndex, index;		
+		vector<string>::iterator currentIndex;	
 		double total = this->keyNumber; 
 		double nbr;
 		bool flag = true;
@@ -144,20 +152,20 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 			caract1 = tmp.substr(0,1);
 			if(current != "" && caract1 != current){ //We have take care of every bigram that begin by current.		
 				for(int i = 0; i < this->keyNumber; ++i){
-					bigram[currentIndex][i] /= total;		// normation			
+					bigram[currentIndex - alphabet.begin()][i] /= total;		// normalization			
 				}
 				total = this->keyNumber;
 			}
 			if(current == "" || caract1 != current){	
 				current = tmp.substr(0,1);
-				currentIndex = this->alphabet.find_first_of(current);
+				currentIndex = find(alphabet.begin(), alphabet.end(), current);
 				
-				while(currentIndex == string::npos){
+				while(currentIndex == alphabet.end()){
 					flag = getline(input, tmp);
 					if(!flag)
 						break;				
 					current = tmp.substr(0,1);
-					currentIndex = this->alphabet.find_first_of(current);
+					currentIndex = find(alphabet.begin(), alphabet.end(), current);
 				} //If the first letter of the bigram is not in the alphabet we skip line until we find a nice one									
 			}
 			if(!flag)						
@@ -165,13 +173,13 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 
 			caract2 = tmp.substr(1,1); //second caracter
 			nbr = atof(tmp.substr(3).c_str());
-			index = this->alphabet.find_first_of(caract2);
-			if(index != string::npos){
-				bigram[currentIndex][index] += nbr;
+			vector<string>::iterator index = find(alphabet.begin(), alphabet.end(), caract2);
+			if(index != alphabet.end()){
+				bigram[currentIndex - alphabet.begin()][index - alphabet.begin()] += nbr;
 				total += nbr;					
 			}
 		}
-		
+
 		for(int i = 0; i < this->keyNumber; ++i){ //Last Verification if a caracter is not present in the first caract of any bigram we norm manually	
 			if(bigram[i][0] == 1){
 				for(int j = 0; j < this->keyNumber; ++j){

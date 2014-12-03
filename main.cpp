@@ -9,7 +9,7 @@
 
 using namespace std;
 
-char findChar(int i, vector<vector<GRBVar> >& kb, string alphabet, int sizeAlphabet){
+string findChar(int i, vector<vector<GRBVar> >& kb, vector<string> alphabet, int sizeAlphabet){
 	for (int j = 0; j < sizeAlphabet; ++j)
 	{
 		if(abs(kb[i][j].get(GRB_DoubleAttr_X) - 1.0) < 0.0000000000001)
@@ -17,7 +17,7 @@ char findChar(int i, vector<vector<GRBVar> >& kb, string alphabet, int sizeAlpha
 	}
 
 	cout << "No no no no no :( Pour i = " << i << endl;
-	return ' ';
+	return " ";
 }
 
 int main(int argc, char const *argv[])
@@ -25,59 +25,10 @@ int main(int argc, char const *argv[])
 	/**
 	 * ============== Parsing ============== 
 	 */
-
-	 DataModel m("datas");
-	/*
-	cout << "Number of Keys : " << m.keyNumber;
-	cout << endl;
-	cout << "Set of the letters : " << m.alphabet;
-	cout << endl;
-
-	cout << "sr : ";
-	 for (vector<int>::iterator it = m.sr.begin() ; it != m.sr.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
 	
-	cout << "sl : ";
-	 for (vector<int>::iterator it = m.sl.begin() ; it != m.sl.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
+	DataModel m("datas", "fl-out1.txt", "fl-out2.txt");
 
-	cout << "Vowels : ";
-	cout << m.vowels << endl;
-	cout << "vl : ";
-	 for (vector<int>::iterator it = m.vl.begin() ; it != m.vl.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
 
-	cout << "ks : ";
-	 for (vector<double>::iterator it = m.ks.begin() ; it != m.ks.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
-
-	cout << "dk : ";
-	 for (vector<int>::iterator it = m.dk.begin() ; it != m.dk.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
-	*/
-	  m.setFreq("fl-out1.txt");
-	/*
-	cout << "fr : ";
-	 for (vector<double>::iterator it = m.fr.begin() ; it != m.fr.end(); ++it)
-	    cout << ' ' << *it;
-	  cout << endl;
-	*/
-	  m.setBig("fl-out2.txt");
-	/*
-	cout << "big : ";
-	for (int i = 0 ; i < m.keyNumber; ++i){
-		for (int j = 0; j < m.keyNumber; ++j)
-		    cout << ' ' << m.big[i][j];
-	  cout <<  endl;
-
-	}
-	  cout << endl;
-	*/
 	int numberKeys = m.getNumberKeys();
 	int sizeAlphabet = numberKeys;
 	int numberVowels = m.getNumberVowels();
