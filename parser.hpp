@@ -5,6 +5,14 @@
 
 #include <stdlib.h>
 
+
+#ifndef _H_PARSER
+#define _H_PARSER A
+
+#include "gurobi_c++.h"
+#include "Callback.hpp"
+
+
 using namespace std;
 
 class DataModel {
@@ -23,7 +31,7 @@ public:
 			    dk;			// dk[i] = distance that the finger attributed to the key i has to cross to reach that key		
 	vector<vector<double> > big;    // big[i][j] = probability that the letter j follows the letter i in a word
 	vector<double> ks,		// ks[i] = force of the finger associate to key i
-				   fr;		// fr[i] = frequence of the key i in the language
+				   fr;		// fr[i] = frequence of the letter i in the language
 
 	
 	DataModel(const char* datafile, const char* freq_file, const char* bigram_file);
@@ -43,7 +51,10 @@ public:
 
 	void setFreq(const char* filename);
 	void setBig(const char* filename);
-
+	void frequencyZone(vector<vector<GRBVar> >);
 };
 
 vector<string> split(string toSplit, string delimiter);
+
+
+#endif
