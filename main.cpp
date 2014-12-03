@@ -9,21 +9,69 @@
 
 using namespace std;
 
-string findChar(int i, vector<vector<GRBVar> >& kb, vector<string> alphabet, int sizeAlphabet){
-	for (int j = 0; j < sizeAlphabet; ++j)
-	{
-		/*
-		if(abs(kb[i][j].get(GRB_DoubleAttr_X) - 1.0) < 0.00000000001)
-			return alphabet[j];
-			*/
-		int value = (int)(kb[i][j].get(GRB_DoubleAttr_X) + 0.5);
-		if(value == 1)
-			return alphabet[j];
+
+void frequencyZone (vector<vector<GRBVar> >& kb, vector<double>& fr, vector<int>& sl){
+/* 	row 1 = 0 - 11
+	row 2 = 12 - 23
+	row 3 = 24 - 35
+	row 4 = 36 - 46
+*/	
+	double rows[4] = {0.0, 0.0, 0.0, 0.0};
+	double left = 0.0, right = 0.0;
+
+	for(int k = 0; k < kb.size() ; ++k) {
+		for(int l = 0; l < kb[k].size() ; ++l) {
+			if((int)(kb[k][l].get(GRB_DoubleAttr_X) + 0.5) == 1){ //If we are on a winning k,l pair
+				//Rows				
+				int row = k / 12; //Except the last one each row are 12 keys long
+				rows[row] += fr[l];
+			
+				//Hand
+				if(sl[k])
+					left += fr[l];
+				else
+					right += fr[l];
+			}
+		}
 	}
+
+	for(int i = 0;  i < 4; ++i)
+		cout << "Row " << i << " : " << rows[i] *100 << "%" << endl;
+
+	cout << "Left Hand : " << left *100 << "%" << endl;
+	cout << "Right Hand : " << right *100 << "%" << endl;
+}
+
+string findChar (int i, vector<vector<GRBVar> >& kb, vector<string>& alphabet){
+	for (int j = 0; j < alphabet.size() ; ++j)
+		if((int)(kb[i][j].get(GRB_DoubleAttr_X) + 0.5) == 1)
+			return alphabet[j];
 
 	cout << "No no no no no :( Pour i = " << i << endl;
 	return " ";
 }
+
+void displayKeyboard (vector<vector<GRBVar> >& kb, vector<string> alphabet){
+	for (int i = 0; i < 12; ++i)
+		cout << findChar(i, kb, alphabet) << " ";
+	cout << endl << " ";
+
+	for (int i = 12; i < 24; ++i)
+		cout << findChar(i, kb, alphabet) << " ";
+	cout << endl << "  ";
+
+	for (int i = 24; i < 36; ++i)
+		cout << findChar(i, kb, alphabet) << " ";
+	cout << endl;
+
+	for (int i = 36; i < alphabet.size(); ++i)
+		cout << findChar(i, kb, alphabet) << " ";
+	cout << endl;
+}
+
+
+
+
 
 int main(int argc, char const *argv[])
 {
@@ -164,8 +212,10 @@ int main(int argc, char const *argv[])
 			
 			for (int k = 0; k < numberKeys; ++k)
 				keyPerLetter += kb[k][l];
-			
-			model.addConstr(keyPerLetter == 1, "One key per letter");
+
+			stringstream ss;
+			ss << "One key for letter " << l;
+			model.addConstr(keyPerLetter == 1, ss.str());
 		}
 
 		// One letter per key
@@ -176,7 +226,9 @@ int main(int argc, char const *argv[])
 			for (int l = 0; l < sizeAlphabet; ++l)
 				letterPerKey += kb[k][l];
 			
-			model.addConstr(letterPerKey == 1, "One letter per key");
+			stringstream ss;
+			ss << "One letter for key " << k;
+			model.addConstr(letterPerKey == 1, ss.str());
 		}
 
 		// Vowels on the same hand
@@ -194,7 +246,9 @@ int main(int argc, char const *argv[])
 
 		for (int i = 0; i < sizeAlphabet; ++i)
 		{
-			model.addConstr(a[i][i] == 0, "a_i_i constr");
+			stringstream ss;
+			ss << "a_" << i << "_" << i << " constraint";
+			model.addConstr(a[i][i] == 0, ss.str());
 		}
 
 		vector<GRBLinExpr> li(sizeAlphabet);
@@ -228,81 +282,6 @@ int main(int argc, char const *argv[])
 
 		model.optimize();
 
-
-		/*
-		// Row generation 
-		
-		int numberOfAddedContraints = 0;
-		bool constr_violated = true;
-
-		// Links between the variables
-		vector<GRBLinExpr> li(sizeAlphabet);
-		for (int i = 0; i < sizeAlphabet; ++i)
-			for (int k = 0; k < numberKeys; ++k)
-				li[i] += (kb[k][i] * sl[k]);
-
-		vector<GRBLinExpr> lj(sizeAlphabet);
-		for (int j = 0; j < sizeAlphabet; ++j)
-			for (int k = 0; k < numberKeys; ++k)
-				lj[j] += (kb[k][j] * sl[k]);
-
-		vector<vector<GRBLinExpr> > constraints_XOR1(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR2(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR3(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR4(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-
-		for (int i = 0; i < sizeAlphabet; ++i)
-		{
-			for (int j = 0; j < sizeAlphabet; ++j)
-			{
-				constraints_XOR1[i][j] = li[i] + lj[j];
-				constraints_XOR2[i][j] = li[i] - lj[j];
-				constraints_XOR3[i][j] = lj[j] - li[i];
-				constraints_XOR4[i][j] = 2 - li[i] - lj[j];
-			}
-		}
-
-		vector<vector<bool> > added_XOR1(sizeAlphabet, vector<bool>(sizeAlphabet, false));
-		vector<vector<bool> > added_XOR2(sizeAlphabet, vector<bool>(sizeAlphabet, false));
-		vector<vector<bool> > added_XOR3(sizeAlphabet, vector<bool>(sizeAlphabet, false));
-		vector<vector<bool> > added_XOR4(sizeAlphabet, vector<bool>(sizeAlphabet, false));
-
-		do{
-			numberOfAddedContraints = 0;
-			// Checking of contraints are violated
-			for (int i = 0; i < sizeAlphabet && numberOfAddedContraints < 10; ++i)
-			{
-				for (int j = 0; j < sizeAlphabet && numberOfAddedContraints < 10; ++j)
-				{
-					if(added_XOR1[i][j])
-						continue;
-
-					if(!(a[i][j].get(GRB_DoubleAttr_X) <= constraints_XOR1[i][j].getValue())){
-						model.addConstr(a[i][j] <= li[i] + lj[j], "XOR1");
-						numberOfAddedContraints++;
-						added_XOR1[i][j] = true;
-					}	
-				}
-			}
-
-			if(numberOfAddedContraints > 0)
-				model.optimize();
- 
-		}while(numberOfAddedContraints > 0);
-
-			//model.addConstr(a[i][j] <= li[i] + lj[j], "XOR1");
-			//model.addConstr(a[i][j] >= li[i] - lj[j], "XOR2");
-			//model.addConstr(a[i][j] >= lj[j] - li[i], "XOR3");
-			//model.addConstr(a[i][j] <= 2 - li[i] - lj[j], "XOR4");		
-		*/
-		
-		/**
-		 * Solve
-		 */
-		//cout << "Solving" << endl;
-		//model.optimize();
-		//cout << "End of solving" << endl;
-
 		/**
 		 * Print
 		 */
@@ -331,30 +310,12 @@ int main(int argc, char const *argv[])
 		// Display keyboard
 		cout << endl;
 		
-		for (int i = 0; i < 12; ++i)
-		{
-			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
-		}
-		cout << endl << " ";
-		for (int i = 12; i < 24; ++i)
-		{
-			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
-		}
-		cout << endl << "  ";
-		for (int i = 24; i < 36; ++i)
-		{
-			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
-		}
-		cout << endl;
-		for (int i = 36; i < sizeAlphabet; ++i)
-		{
-			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
-		}
-		cout << endl;
+		displayKeyboard(kb, m.getAlphabet());
+
 		cout << endl;
 
 		cout << "Statistic results : " << endl;
-		m.frequencyZone(kb);
+		frequencyZone(kb, fr, sl);
 		
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;

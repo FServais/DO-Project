@@ -6,13 +6,11 @@
 
 #include <stdlib.h>
 
-#include "gurobi_c++.h"
-
 using namespace std;
 
 class DataModel {
 
-public:
+private:
 	/**
 	 * keyNumber : Number of keys
 	 * vowelsNumber : Number of vowels
@@ -28,7 +26,8 @@ public:
 	vector<double> ks,		// ks[i] = force of the finger associate to key i
 				   fr;		// fr[i] = frequence of the letter i in the language
 
-	
+
+public:
 	DataModel(const char* datafile, const char* freq_file, const char* bigram_file);
 
 	int getNumberKeys(){ return keyNumber; }
@@ -46,7 +45,6 @@ public:
 
 	void setFreq(const char* filename);
 	void setBig(const char* filename);
-	void frequencyZone(vector<vector<GRBVar> >& kb);
 };
 
 vector<string> split(string toSplit, string delimiter);

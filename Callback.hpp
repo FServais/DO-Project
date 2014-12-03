@@ -1,6 +1,9 @@
 class Callback : public GRBCallback
 {
-public:
+private:
+	/*
+		Variables
+	 */
 	vector<vector<GRBVar> > kb, a;
 	GRBVar vl;
 
@@ -19,6 +22,49 @@ public:
 	vector<vector<GRBLinExpr> > constraints_XOR3;
 	vector<vector<GRBLinExpr> > constraints_XOR4;
 
+	/*
+		Methods
+	 */
+	bool isSatisfied(string constr, int i, int j){ 
+		if(constr == "XOR1"){
+			int sum = 0;
+			for (int k = 0; k < sizeAlphabet; ++k)
+				sum += ((getSolution(kb[k][i]) + getSolution(kb[k][j])) * sl[k]);
+				
+			return getSolution(a[i][j]) <= sum;
+		}
+
+		else if(constr == "XOR2"){
+			int sum = 0;
+			for (int k = 0; k < sizeAlphabet; ++k)
+				sum += ((getSolution(kb[k][i]) - getSolution(kb[k][j])) * sl[k]);
+			
+			return getSolution(a[i][j]) >= sum;
+		}
+
+		else if(constr == "XOR3"){
+			int sum = 0;
+			for (int k = 0; k < sizeAlphabet; ++k)
+				sum += ((getSolution(kb[k][j]) - getSolution(kb[k][i])) * sl[k]);
+			
+			return getSolution(a[i][j]) >= sum;
+		}
+
+		else if(constr == "XOR4"){
+			int sum = 0;
+			for (int k = 0; k < sizeAlphabet; ++k)
+				sum += ((getSolution(kb[k][i]) + getSolution(kb[k][j])) * sl[k]);
+			
+			return getSolution(a[i][j]) <= 2 - sum;
+		}
+
+		return false;
+	}
+
+public:
+	/*
+		Constructor
+	 */
 	Callback(int _sizeAlphabet, vector<vector<GRBVar> > _kb, GRBVar _vl, vector<vector<GRBVar> > _a,
 			vector<int> _sl, 
 			vector<GRBLinExpr> _li, vector<GRBLinExpr> _lj, 
@@ -45,7 +91,6 @@ public:
 
 	}
 
-	/* data */
 protected: 
 	void callback(){
 		try{
@@ -100,7 +145,7 @@ protected:
 
 					if(!haveToAddMore){
 						finished = true;
-						cout << "================= FINISHED ================" << endl;
+						cout << "No lazy contraint to add anymore" << endl;
 					}
 				}
 			}
@@ -113,41 +158,5 @@ protected:
 		}
 		
 	}
-
-private:
-	int isSatisfied(string constr, int i, int j){ 
-		if(constr == "XOR1"){
-			int sum = 0;
-			for (int k = 0; k < sizeAlphabet; ++k)
-				sum += ((getSolution(kb[k][i]) + getSolution(kb[k][j])) * sl[k]);
-				
-			return getSolution(a[i][j]) <= sum;
-		}
-
-		else if(constr == "XOR2"){
-			int sum = 0;
-			for (int k = 0; k < sizeAlphabet; ++k)
-				sum += ((getSolution(kb[k][i]) - getSolution(kb[k][j])) * sl[k]);
-			
-			return getSolution(a[i][j]) >= sum;
-		}
-
-		else if(constr == "XOR3"){
-			int sum = 0;
-			for (int k = 0; k < sizeAlphabet; ++k)
-				sum += ((getSolution(kb[k][j]) - getSolution(kb[k][i])) * sl[k]);
-			
-			return getSolution(a[i][j]) >= sum;
-		}
-
-		else if(constr == "XOR4"){
-			int sum = 0;
-			for (int k = 0; k < sizeAlphabet; ++k)
-				sum += ((getSolution(kb[k][i]) + getSolution(kb[k][j])) * sl[k]);
-			
-			return getSolution(a[i][j]) <= 2 - sum;
-		}
-	}
 	
-
 };
