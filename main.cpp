@@ -12,7 +12,12 @@ using namespace std;
 string findChar(int i, vector<vector<GRBVar> >& kb, vector<string> alphabet, int sizeAlphabet){
 	for (int j = 0; j < sizeAlphabet; ++j)
 	{
-		if(abs(kb[i][j].get(GRB_DoubleAttr_X) - 1.0) < 0.0000000000001)
+		/*
+		if(abs(kb[i][j].get(GRB_DoubleAttr_X) - 1.0) < 0.00000000001)
+			return alphabet[j];
+			*/
+		int value = (int)(kb[i][j].get(GRB_DoubleAttr_X) + 0.5);
+		if(value == 1)
 			return alphabet[j];
 	}
 
@@ -301,12 +306,12 @@ int main(int argc, char const *argv[])
 		/**
 		 * Print
 		 */
-		/*
+		
 		cout << "======== kb ========" << endl;
 		for (int k = 0; k < numberKeys; ++k)
 			for (int l = 0; l < sizeAlphabet; ++l)
 				cout << kb[k][l].get(GRB_StringAttr_VarName) << " = " << kb[k][l].get(GRB_DoubleAttr_X) << endl;
-
+			/*
 		cout << endl;
 		
 		cout << "======== vl ========" << endl;

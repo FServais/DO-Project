@@ -63,7 +63,7 @@ DataModel::DataModel(const char* datafile, const char* freq_file, const char* bi
 
 		vector<int> tmp3(this->keyNumber, 0);		
 		for(int i = 0; i < tmp.size(); ++i){
-			string s(tmp[i],1);
+			string s = tmp.substr(i,1);
 			int index = find(alphabet.begin(), alphabet.end(), s) - alphabet.begin();
 			tmp3[index] = 1;
 		}
