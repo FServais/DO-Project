@@ -1,11 +1,24 @@
 #include <algorithm>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 #include "gurobi_c++.h"
 #include "parser.hpp"
+#include "Callback.hpp"
 
 using namespace std;
+
+char findChar(int i, vector<vector<GRBVar> >& kb, string alphabet, int sizeAlphabet){
+	for (int j = 0; j < sizeAlphabet; ++j)
+	{
+		if(abs(kb[i][j].get(GRB_DoubleAttr_X) - 1.0) < 0.0000000000001)
+			return alphabet[j];
+	}
+
+	cout << "No no no no no :( Pour i = " << i << endl;
+	return ' ';
+}
 
 int main(int argc, char const *argv[])
 {
@@ -47,14 +60,14 @@ int main(int argc, char const *argv[])
 	    cout << ' ' << *it;
 	  cout << endl;
 	*/
-	  m.setFreq("out1.txt");
+	  m.setFreq("fl-out1.txt");
 	/*
 	cout << "fr : ";
 	 for (vector<double>::iterator it = m.fr.begin() ; it != m.fr.end(); ++it)
 	    cout << ' ' << *it;
 	  cout << endl;
 	*/
-	  m.setBig("out2.txt");
+	  m.setBig("fl-out2.txt");
 	/*
 	cout << "big : ";
 	for (int i = 0 ; i < m.keyNumber; ++i){
@@ -94,6 +107,8 @@ int main(int argc, char const *argv[])
 		cout << "Creating model" << endl;
 		GRBModel model = GRBModel(env);
 
+		model.getEnv().set(GRB_IntParam_LazyConstraints, 1);
+
 		/**
 		 * Variables
 		 */
@@ -119,7 +134,11 @@ int main(int argc, char const *argv[])
 			for (int l = 0; l < sizeAlphabet; ++l){
 				stringstream ss;
 				ss << "a_" << k << "_" << l;
-				a[k][l] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+
+				if (k == l)
+					a[k][l] = model.addVar(0.0, 0.0, 0.0, GRB_BINARY, ss.str());
+				else
+					a[k][l] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
 			}
 		}
 
@@ -217,10 +236,45 @@ int main(int argc, char const *argv[])
 		}
 		model.addConstr(vowels_side == numberVowels * vl, "Vowels on the same hand");
 
+		for (int i = 0; i < sizeAlphabet; ++i)
+		{
+			model.addConstr(a[i][i] == 0, "a_i_i constr");
+		}
+
+		vector<GRBLinExpr> li(sizeAlphabet);
+		for (int i = 0; i < sizeAlphabet; ++i)
+			for (int k = 0; k < numberKeys; ++k)
+				li[i] += (kb[k][i] * sl[k]);
+
+		vector<GRBLinExpr> lj(sizeAlphabet);
+		for (int j = 0; j < sizeAlphabet; ++j)
+			for (int k = 0; k < numberKeys; ++k)
+				lj[j] += (kb[k][j] * sl[k]);
+
+		vector<vector<GRBLinExpr> > constraints_XOR1(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR2(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR3(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		vector<vector<GRBLinExpr> > constraints_XOR4(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+
+		for (int i = 0; i < sizeAlphabet; ++i)
+		{ 
+			for (int j = 0; j < sizeAlphabet; ++j)
+			{
+				constraints_XOR1[i][j] = li[i] + lj[j];
+				constraints_XOR2[i][j] = li[i] - lj[j];
+				constraints_XOR3[i][j] = lj[j] - li[i];
+				constraints_XOR4[i][j] = 2 - li[i] - lj[j];
+			}
+		}
+
+		Callback cb(sizeAlphabet, kb, vl, a, sl, li, lj, constraints_XOR1, constraints_XOR2, constraints_XOR3, constraints_XOR4);
+		model.setCallback(&cb);
+
 		model.optimize();
 
+
 		/*
-		// Row generation
+		// Row generation 
 		
 		int numberOfAddedContraints = 0;
 		bool constr_violated = true;
@@ -277,7 +331,7 @@ int main(int argc, char const *argv[])
 
 			if(numberOfAddedContraints > 0)
 				model.optimize();
-
+ 
 		}while(numberOfAddedContraints > 0);
 
 			//model.addConstr(a[i][j] <= li[i] + lj[j], "XOR1");
@@ -296,13 +350,14 @@ int main(int argc, char const *argv[])
 		/**
 		 * Print
 		 */
+		/*
 		cout << "======== kb ========" << endl;
 		for (int k = 0; k < numberKeys; ++k)
 			for (int l = 0; l < sizeAlphabet; ++l)
 				cout << kb[k][l].get(GRB_StringAttr_VarName) << " = " << kb[k][l].get(GRB_DoubleAttr_X) << endl;
 
 		cout << endl;
-
+		
 		cout << "======== vl ========" << endl;
 		cout << vl.get(GRB_StringAttr_VarName) << " = " << vl.get(GRB_DoubleAttr_X) << endl;
 
@@ -312,11 +367,35 @@ int main(int argc, char const *argv[])
 		for (int i = 0; i < sizeAlphabet; ++i)
 			for (int j = 0; j < sizeAlphabet; ++j)
 				cout << a[i][j].get(GRB_StringAttr_VarName) << " = " << a[i][j].get(GRB_DoubleAttr_X) << endl;
-
+		*/
 		cout << endl;
-
+		
 		cout << "Objective function = " << model.get(GRB_DoubleAttr_ObjVal) << endl;
 
+		// Display keyboard
+		cout << endl;
+		
+		for (int i = 0; i < 12; ++i)
+		{
+			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
+		}
+		cout << endl << " ";
+		for (int i = 12; i < 24; ++i)
+		{
+			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
+		}
+		cout << endl << "  ";
+		for (int i = 24; i < 36; ++i)
+		{
+			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
+		}
+		cout << endl;
+		for (int i = 36; i < sizeAlphabet; ++i)
+		{
+			cout << findChar(i, kb, m.getAlphabet(), sizeAlphabet) << " ";
+		}
+		cout << endl;
+		
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;
 		cout << e.getMessage() << endl;

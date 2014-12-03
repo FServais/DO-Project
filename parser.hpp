@@ -28,6 +28,8 @@ public:
 
 	int getNumberKeys(){ return keyNumber; }
 	int getNumberVowels(){ return vowelsNumber; }
+
+	string getAlphabet(){ return alphabet; }
 	
 	vector<int> getDistanceKey() { return dk; }
 	vector<int> getLeftHandKeys(){ return sl; }

@@ -57,15 +57,14 @@ DataModel::DataModel(const char* filename){
 		getline(input, tmp);
 		tmp = tmp.substr(3);
 		this->vowels = tmp;
+
 		vector<int> tmp3(this->keyNumber, 0);		
 		for(int i = 0; i < tmp.size(); ++i){
 			int index =  this->alphabet.find_first_of(tmp[i]);
 			tmp3[index] = 1;
 		}
-		this->vl = tmp3;
+		this->vl = tmp3; // = 1 if the letter is a vowel
 
-		//getline(input, tmp);
-		//this->vowelsNumber = atoi(tmp.substr(3).c_str());
 		this->vowelsNumber = this->vowels.size();
 
 		//Finger and strength
@@ -100,6 +99,7 @@ void DataModel::setFreq(const char* filename){
 	input.open(filename);
 
 	if(input.is_open()) {
+		
 		double total = this->keyNumber;
 		string tmp;
 		string caract;
@@ -121,7 +121,8 @@ void DataModel::setFreq(const char* filename){
 		for(int i = 0; i < freq.size(); ++i){
 			freq[i] /= total;
 		}		
-		this->fr = freq;	
+		this->fr = freq;
+	
 	}
 }
 
