@@ -2,3 +2,7 @@ gurobi.log
 main
 main.dSYM/Contents/Info.plist
 main.dSYM/Contents/Resources/DWARF/main
+Rapport/rapport.aux
+Rapport/rapport.fdb_latexmk
+Rapport/rapport.log
+Rapport/rapport.synctex.gz
