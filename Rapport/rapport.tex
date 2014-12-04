@@ -58,6 +58,103 @@
 
 \section{Model}
 
+	\subsection{Datas}
+
+\begin{itemize}		
+	\item $sl_{k} = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if the key $k$ is on the left side,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$
+
+	\item $sr_{k} = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if the key $k$ is on the right side,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$
+
+	\item $fr_k$ : probability of the apparition of the letter $l$ in the considered language.
+
+	\item $v_{l} = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if the letter $l$ is a vowel,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$
+
+	\item $V$ : number of vowels in the language.
+
+	\item $w_{i,j}$ : probability that the letter $j$ follows the letter $i$ in a word. 
+
+	\item $ks_{k}$ : strength of the finger associated to key $k$ ($ks_k \in [0,1])$.
+
+	\item $d_k$ : distance that the finger attributed to the key $k$ has to cross to reach that key.
+\end{itemize}
+
+	\subsection{Variables}
+
+\begin{itemize}
+ 	\item$kb_{k,l} = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if the letter $l$ is on the key $k$,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$
+
+	\item $vl = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if the vowels are on the left side,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$
+
+	\item $a_{i,j} = \left\{ 
+	\begin{array}{ll}
+		1 & \text{if to type $i$ and then $j$, it is not the same hand that is used,}\\
+		0 & \text{otherwise.}\\
+	\end{array}
+	\right.$	
+\end{itemize}
+
+
+
+	\subsection{Constraints}
+
+\begin{itemize}
+	\item $\sum_l fr_l \cdot \left(\sum_k kb_{k,l} \cdot (sr_k - sl_k) \right) \geq 0$
+
+	\item $\sum_k kb_{k,l} = 1 \text{, } \forall l$
+
+	\item $\sum_l kb_{k,l} = 1 \text{, } \forall k$
+
+	\item $\sum_l v_l \cdot \left( \sum_k kb_{k,l} \cdot sl_k \right) = V \cdot vl$
+
+	\item $a_{i,j} = a_{j,i} \text{, } \forall i,j$
+
+	\item $a_{i,i} = 0 \text{, } \forall i$
+
+	\item $a_{i,j} \leq \sum_k kb_{k,i} \cdot sl_k + \sum_k kb_{k,j} \cdot sl_k$
+
+	\item $a_{i,j} \geq \sum_k kb_{k,i} \cdot sl_k - \sum_k kb_{k,j} \cdot sl_k$
+
+	\item $a_{i,j} \geq \sum_k kb_{k,j} \cdot sl_k - \sum_k kb_{k,i} \cdot sl_k$
+
+	\item $a_{i,j} \leq 2 - \sum_k kb_{k,i} \cdot sl_k - \sum_k kb_{k,j} \cdot sl_k$
+\end{itemize}
+
+	\subsection{Objective function}
+
+\[
+	\min \left[ \sum_l fr_l \cdot \left( \sum_k dif_k \cdot kb_{k,l}  \right) + \sum_i \sum_j w_{i,j} \cdot \left(1 - a_{i,j}\right) + \sum_i \sum_j w_{i,j} \left( \sum_k d_k \cdot kb_{k,i} + \sum_l d_l \cdot lb_{k,i} \right) \right]
+\]
+
+where 
+\[
+	dif_k = d_k \cdot ks_k \text{ is the difficulty to type the key }k
+\]
+
 
 \section{Datas}
 
