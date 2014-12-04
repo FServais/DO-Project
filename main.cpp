@@ -79,7 +79,7 @@ int main(int argc, char const *argv[])
 	 * ============== Parsing ============== 
 	 */
 	
-	DataModel m("datas", "fl-out1.txt", "fl-out2.txt");
+	DataModel m("datas", "pj-1.txt", "pj-2.txt");
 
 
 	int numberKeys = m.getNumberKeys();
