@@ -22,7 +22,6 @@ vector<string> split(string toSplit, string delimiter){
 }
 
 DataModel::DataModel(const char* datafile, const char* freq_file, const char* bigram_file){	
-	this->invalidModel = false;	
 	this->keyNumber = 47;
 	setFreq(freq_file);
 

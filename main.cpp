@@ -78,9 +78,23 @@ int main(int argc, char const *argv[])
 	/**
 	 * ============== Parsing ============== 
 	 */
-	
-	DataModel m("datas", "pj-1.txt", "pj-2.txt");
+	const char* freq1File;
+	const char* freq2File;	
 
+	if(argc == 3){
+		freq1File = argv[1];
+		freq2File = argv[2];
+	 }
+	else{
+		freq1File = "fl-out1.txt";
+		freq2File = "fl-out2.txt";
+	}
+
+	DataModel m("datas", freq1File, freq2File);
+	if(m.isInvalid()){
+		cerr << "ERROR : One or several input file(s) have failed to open." << endl;
+		return -1;
+	}
 
 	int numberKeys = m.getNumberKeys();
 	int sizeAlphabet = numberKeys;

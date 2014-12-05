@@ -26,7 +26,7 @@ private:
 	vector<double> ks,		// ks[i] = force of the finger associate to key i
 				   fr;		// fr[i] = frequence of the letter i in the language
 
-	bool invalidModel;
+	bool invalidModel = false;
 
 
 public:
