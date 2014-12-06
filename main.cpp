@@ -46,8 +46,7 @@ string findChar (int i, vector<vector<GRBVar> >& kb, vector<string>& alphabet){
 	for (int j = 0; j < alphabet.size() ; ++j)
 		if((int)(kb[i][j].get(GRB_DoubleAttr_X) + 0.5) == 1)
 			return alphabet[j];
-
-	cout << "No no no no no :( Pour i = " << i << endl;
+		
 	return " ";
 }
 
@@ -78,8 +77,8 @@ int main(int argc, char const *argv[])
 	/**
 	 * ============== Parsing ============== 
 	 */
-	
-	DataModel m("datas", "pj-1.txt", "pj-2.txt");
+	// Datamodel m(<data file>, <count of symbols file>, <count of bigrams file>)
+	DataModel m("datas", "sched-1.txt", "sched-2.txt");
 
 
 	int numberKeys = m.getNumberKeys();
@@ -92,10 +91,6 @@ int main(int argc, char const *argv[])
 	vector<int> sl = m.getLeftHandKeys();
 	vector<int> sr = m.getRightHandKeys();
 	vector<int> v = m.getLeftSideLetters(); 
-
-	vector<double> dif(dk.size());
-	for (int i = 0; i < dk.size() ; ++i)
-		dif[i] = dk[i]*ks[i];
 
 	vector<vector<double> > w = m.getBigramsFreq();
 
@@ -121,7 +116,7 @@ int main(int argc, char const *argv[])
 		GRBVar vl; // Vowel on the left side or not
 		vector<vector<GRBVar> > a(numberKeys, vector<GRBVar>(sizeAlphabet)); // Not the same hand to type one then another
 
-		// kb_{k,l}
+		// kb_{k,l} : Assign the letters to the key
 		for (int k = 0; k < numberKeys; ++k){
 			for (int l = 0; l < sizeAlphabet; ++l){
 				stringstream ss;
@@ -130,19 +125,19 @@ int main(int argc, char const *argv[])
 			}
 		}
 
-		// vl
+		// vl : side of the vowels
 		vl = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "vl");
 
-		// a
-		for (int k = 0; k < numberKeys; ++k){
-			for (int l = 0; l < sizeAlphabet; ++l){
+		// a : = 1 if not the same hand used to go from i to j
+		for (int i = 0; i < sizeAlphabet; ++i){
+			for (int j = 0; j < sizeAlphabet; ++j){
 				stringstream ss;
-				ss << "a_" << k << "_" << l;
+				ss << "a_" << i << "_" << j;
 
-				if (k == l)
-					a[k][l] = model.addVar(0.0, 0.0, 0.0, GRB_BINARY, ss.str());
+				if (i == j)
+					a[i][j] = model.addVar(0.0, 0.0, 0.0, GRB_BINARY, ss.str());
 				else
-					a[k][l] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+					a[i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
 			}
 		}
 
@@ -159,7 +154,7 @@ int main(int argc, char const *argv[])
 			GRBLinExpr term;
 
 			for (int j = 0; j < numberKeys; ++j)
-				term += (dif[j] * kb[j][i]);
+				term += (dk[j] * ks[j] * kb[j][i]);
 
 			term *= fr[i];
 			objFunction += term;
@@ -251,33 +246,7 @@ int main(int argc, char const *argv[])
 			model.addConstr(a[i][i] == 0, ss.str());
 		}
 
-		vector<GRBLinExpr> li(sizeAlphabet);
-		for (int i = 0; i < sizeAlphabet; ++i)
-			for (int k = 0; k < numberKeys; ++k)
-				li[i] += (kb[k][i] * sl[k]);
-
-		vector<GRBLinExpr> lj(sizeAlphabet);
-		for (int j = 0; j < sizeAlphabet; ++j)
-			for (int k = 0; k < numberKeys; ++k)
-				lj[j] += (kb[k][j] * sl[k]);
-
-		vector<vector<GRBLinExpr> > constraints_XOR1(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR2(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR3(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-		vector<vector<GRBLinExpr> > constraints_XOR4(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
-
-		for (int i = 0; i < sizeAlphabet; ++i)
-		{ 
-			for (int j = 0; j < sizeAlphabet; ++j)
-			{
-				constraints_XOR1[i][j] = li[i] + lj[j];
-				constraints_XOR2[i][j] = li[i] - lj[j];
-				constraints_XOR3[i][j] = lj[j] - li[i];
-				constraints_XOR4[i][j] = 2 - li[i] - lj[j];
-			}
-		}
-
-		Callback cb(sizeAlphabet, kb, vl, a, sl, li, lj, constraints_XOR1, constraints_XOR2, constraints_XOR3, constraints_XOR4);
+		Callback cb(sizeAlphabet, kb, vl, a, sl);
 		model.setCallback(&cb);
 
 		model.optimize();

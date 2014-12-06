@@ -61,33 +61,41 @@ private:
 		return false;
 	}
 
+
 public:
 	/*
 		Constructor
 	 */
-	Callback(int _sizeAlphabet, vector<vector<GRBVar> > _kb, GRBVar _vl, vector<vector<GRBVar> > _a,
-			vector<int> _sl, 
-			vector<GRBLinExpr> _li, vector<GRBLinExpr> _lj, 
-			vector<vector<GRBLinExpr> > _constraints_XOR1, vector<vector<GRBLinExpr> > _constraints_XOR2, vector<vector<GRBLinExpr> > _constraints_XOR3, vector<vector<GRBLinExpr> > _constraints_XOR4) :
-			finished(false),
-			sl(_sl), 
-			XOR1Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), 
-			XOR2Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), 
-			XOR3Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), 
-			XOR4Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)){
+	Callback(int _sizeAlphabet, vector<vector<GRBVar> > _kb, GRBVar _vl, vector<vector<GRBVar> > _a, vector<int> _sl) : 
+			finished(false), sl(_sl), kb(_kb), vl(_vl), a(_a), sizeAlphabet(_sizeAlphabet),
+			XOR1Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR2Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR3Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR4Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false))
+	{
 
-		sizeAlphabet = _sizeAlphabet;
+		li = vector<GRBLinExpr>(_sizeAlphabet);
+		for (int i = 0; i < _sizeAlphabet; ++i)
+			for (int k = 0; k < _sizeAlphabet; ++k)
+				li[i] += (_kb[k][i] * _sl[k]);
 
-		kb = _kb;
-		vl = _vl;
-		a = _a;
+		lj = vector<GRBLinExpr>(_sizeAlphabet);
+		for (int j = 0; j < _sizeAlphabet; ++j)
+			for (int k = 0; k < _sizeAlphabet; ++k)
+				lj[j] += (_kb[k][j] * _sl[k]);
 
-		li = _li;
-		lj = _lj;
-		constraints_XOR1 = _constraints_XOR1;
-		constraints_XOR2 = _constraints_XOR2;
-		constraints_XOR3 = _constraints_XOR3;
-		constraints_XOR4 = _constraints_XOR4;
+		constraints_XOR1 = vector<vector<GRBLinExpr> >(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		constraints_XOR2 = vector<vector<GRBLinExpr> >(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		constraints_XOR3 = vector<vector<GRBLinExpr> >(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+		constraints_XOR4 = vector<vector<GRBLinExpr> >(sizeAlphabet, vector<GRBLinExpr>(sizeAlphabet));
+
+		for (int i = 0; i < _sizeAlphabet; ++i)
+		{ 
+			for (int j = 0; j < _sizeAlphabet; ++j)
+			{
+				constraints_XOR1[i][j] = li[i] + lj[j];
+				constraints_XOR2[i][j] = li[i] - lj[j];
+				constraints_XOR3[i][j] = lj[j] - li[i];
+				constraints_XOR4[i][j] = 2 - li[i] - lj[j];
+			}
+		}
 
 	}
 

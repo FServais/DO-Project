@@ -147,19 +147,19 @@
 	\subsection{Objective function}
 
 \[
-	\min \left[ \sum_l fr_l \cdot \left( \sum_k dif_k \cdot kb_{k,l}  \right) + \sum_i \sum_j w_{i,j} \cdot \left(1 - a_{i,j}\right) + \sum_i \sum_j w_{i,j} \left( \sum_k d_k \cdot kb_{k,i} + \sum_l d_l \cdot lb_{k,i} \right) \right]
+	\min \left[ \sum_l fr_l \cdot \left( \sum_k ks_k \cdot d_k \cdot kb_{k,l}  \right) + \sum_i \sum_j w_{i,j} \cdot \left(1 - a_{i,j}\right) + \sum_i \sum_j w_{i,j} \left( \sum_k d_k \cdot kb_{k,i} + \sum_l d_l \cdot kb_{k,j} \right) \right]
 \]
 
-where 
-\[
-	dif_k = d_k \cdot ks_k \text{ is the difficulty to type the key }k
-\]
 
 
 \section{Datas}
 
 
 \section{Method}
+To obtain an optimal keyboard related to our model by using the \textbf{row generation} method. To implement that method, we use 2 concepts that are present in Gurobi : the lazy constraint and the callback.
+\paragraph{}
+The lazy constraints are the constraints that are less likely to be violated, so they are not contained in the set of the beginning but are added as we go along the execution of the solver. In order to do that, we use the callback system. We provide a class containing a \texttt{callback()} function which is called at key steps of the resolution.
+In our implementation, the function is called when the solver found a solution. 
 
 
 \section{Results}
