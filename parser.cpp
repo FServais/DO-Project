@@ -22,9 +22,13 @@ vector<string> split(string toSplit, string delimiter){
 }
 
 DataModel::DataModel(const char* datafile, const char* freq_file, const char* bigram_file){	
+	this->invalidModel = false;	
 	this->keyNumber = 47;
 	setFreq(freq_file);
 
+	if(this->invalidModel)
+		return;
+	
 	ifstream input;
 	input.open(datafile);
 
@@ -95,10 +99,13 @@ DataModel::DataModel(const char* datafile, const char* freq_file, const char* bi
 			distInt[i] = atoi(distance[i].c_str());
 		}		
 		this->dk = distInt;
-
+		setBig(bigram_file);
+	}
+	else{
+		this->invalidModel = false;
 	}
 
-	setBig(bigram_file);
+
 }
 
 
@@ -133,6 +140,9 @@ void DataModel::setFreq(const char* filename){
 
 
 		this->fr = freq;
+	}
+	else{
+		this->invalidModel = true;
 	}
 }
 
@@ -189,6 +199,9 @@ void DataModel::setBig(const char* filename){ //Here we take into account that t
 			}
 		} 
 		this->big = bigram;	
+	}
+	else{
+		this->invalidModel = true;
 	}
 }
 

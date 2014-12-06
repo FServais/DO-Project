@@ -26,6 +26,8 @@ private:
 	vector<double> ks,		// ks[i] = force of the finger associate to key i
 				   fr;		// fr[i] = frequence of the letter i in the language
 
+	bool invalidModel;
+
 
 public:
 	DataModel(const char* datafile, const char* freq_file, const char* bigram_file);
@@ -42,6 +44,8 @@ public:
 	vector<double> getFrequencies(){ return fr; }
 	vector<double> getStrength(){ return ks; }
 	vector<vector<double> > getBigramsFreq() {return big; }
+
+	bool isInvalid() { return invalidModel; }
 
 	void setFreq(const char* filename);
 	void setBig(const char* filename);
