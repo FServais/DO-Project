@@ -279,6 +279,7 @@ int main(int argc, char const *argv[])
 		 * Print
 		 */
 		
+		/*
 		cout << "======== kb ========" << endl; 
 		for (int k = 0; k < numberKeys; ++k)
 			for (int l = 0; l < sizeAlphabet; ++l) 
@@ -297,6 +298,8 @@ int main(int argc, char const *argv[])
 				cout << a[i][j].get(GRB_StringAttr_VarName) << " = " << a[i][j].get(GRB_DoubleAttr_X) << endl;
 		
 		cout << endl;
+
+		*/
 		
 		cout << "Objective function = " << model.get(GRB_DoubleAttr_ObjVal) << endl;
 
@@ -315,7 +318,7 @@ int main(int argc, char const *argv[])
 		if (!cb.isSatisfied())
 			cout << "No" << endl;
 		else
-			cout << "Yes" << endl; 
+			cout << "OK" << endl; 
 		 
 		cout << endl;
 

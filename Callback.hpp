@@ -9,6 +9,7 @@ private:
 
     int sizeAlphabet;
 
+    // Keep track of what has been added
 	vector<vector<bool> > XOR1Added, XOR2Added, XOR3Added, XOR4Added;
 
 	vector<int> sl;
