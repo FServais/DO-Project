@@ -57,8 +57,9 @@
 
 
 
-\section{Datas}
+\section{Data}
 
+The data listed below are the ones from the Integer Model that we have use in the first report.
 \begin{itemize}		
 	\item $sl_{k} = \left\{ 
 	\begin{array}{ll}
@@ -91,6 +92,27 @@
 
 	\item $d_k$ : distance that the finger attributed to the key $k$ has to cross to reach that key.
 \end{itemize}
+
+Data's Collect : \\
+
+Concerning the data related to the keyboard ($sl_{k}$, $sr_{k}$, $d_{k}$) we have based our analysis on the keyboard present on the BEPO graphic in the assignment paper. \\
+The distance is calculated as the number of "moves" from the home row the finger has to do. There is no diagonal moves. \\
+
+For the strength of the finger we have arbitrary decided that thumb will be 0,  the index will  be 0.75 the middle finger 1, the annular 0.5 and the auricular 0.1. \\
+
+We have match each key with a finger, so with the strength of the finger associated we can construct $ks_{k}$. \\
+
+To collect the frequencies of the letters apparition and the bi-grams we have use the NGramExtraction tool from Deception.\\
+To obtain the alphabet that we will use we just use the 47 letters and characters that have the highest number of occurrence. (47 is the number of key in our keyboard)\\
+Then we "norm" the number of occurrence of each letter by the total to have the frequency of each letter.\\
+We also norm the bi-gram so that the sum of each bi-gram frequency starting by a specified letter make always 1.\\
+
+Data file organisation : \\
+The file of data (named datas) is structured to be human readable, the first word is the name of the variable then the content (note: it has to be in this order for the parser program).
+The data do not have the same format as in the model, for example it's the number of the key that is indicated in the sl, sr vectors. The parser translate it into binary data. We have do this in that way to avoid errors and to keep the data file readable.
+fs represent the finger strength and the kbX the key associated to a certain finger (no key are for the thumbs).
+
+
 
 
 
