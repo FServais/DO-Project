@@ -56,9 +56,8 @@
 \section{Introduction}
 
 
-\section{Model}
 
-	\subsection{Datas}
+\section{Datas}
 
 \begin{itemize}		
 	\item $sl_{k} = \left\{ 
@@ -93,6 +92,11 @@
 	\item $d_k$ : distance that the finger attributed to the key $k$ has to cross to reach that key.
 \end{itemize}
 
+
+
+
+\section{Model}
+
 	\subsection{Variables}
 
 \begin{itemize}
@@ -117,8 +121,6 @@
 	\end{array}
 	\right.$	
 \end{itemize}
-
-
 
 	\subsection{Constraints}
 
@@ -152,14 +154,24 @@
 
 
 
-\section{Datas}
-
-
 \section{Method}
 To obtain an optimal keyboard related to our model by using the \textbf{row generation} method. To implement that method, we use 2 concepts that are present in Gurobi : the lazy constraint and the callback.
 \paragraph{}
 The lazy constraints are the constraints that are less likely to be violated, so they are not contained in the set of the beginning but are added as we go along the execution of the solver. In order to do that, we use the callback system. We provide a class containing a \texttt{callback()} function which is called at key steps of the resolution.
-In our implementation, the function is called when the solver found a solution. 
+In our implementation, the function is called when the solver found a solution. This function checks if one of the lazy constraints is violated or not. If yes, we add it to the model by using the \texttt{addLazy()} function.
+\paragraph{}
+The constraints that are considered lazy are these one : $\forall i,j$,
+\begin{itemize}
+	\item $a_{i,j} \leq \sum_k kb_{k,i} \cdot sl_k + \sum_k kb_{k,j} \cdot sl_k$
+
+	\item $a_{i,j} \geq \sum_k kb_{k,i} \cdot sl_k - \sum_k kb_{k,j} \cdot sl_k$
+
+	\item $a_{i,j} \geq \sum_k kb_{k,j} \cdot sl_k - \sum_k kb_{k,i} \cdot sl_k$
+
+	\item $a_{i,j} \leq 2 - \sum_k kb_{k,i} \cdot sl_k - \sum_k kb_{k,j} \cdot sl_k$
+\end{itemize}
+\paragraph{}
+
 
 
 \section{Results}
