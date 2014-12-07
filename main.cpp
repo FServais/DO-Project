@@ -80,19 +80,16 @@ int main(int argc, char const *argv[])
 	const char* freq1File;
 	const char* freq2File;	
 
-	if(argc == 3){
-		freq1File = argv[1];
-		freq2File = argv[2];
-	 }
-	else{
+	if(argc != 3){
 		cout << "Usage : ./main <count of symbols file> <count of bigrams file>" << endl;
-		cout << "Default sample text : Flaubert" << endl;
-		freq1File = "fl-out1.txt";
-		freq2File = "fl-out2.txt";
+		return -1;	
 	}
 
+	freq1File = argv[1];
+	freq2File = argv[2];
+
 	// Datamodel m(<data file>, <count of symbols file>, <count of bigrams file>)
-	DataModel m("datas", freq1File, freq2File);
+	DataModel m("data", freq1File, freq2File);
 	if(m.isInvalid()){
 		cerr << "ERROR : One or several input file(s) have failed to open." << endl;
 		return -1;
@@ -314,10 +311,11 @@ int main(int argc, char const *argv[])
 		frequencyZone(kb, fr, sl);
 		cout << endl; 
 
+		cout << "Check if all constraints are satisfied : ";
 		if (!cb.isSatisfied())
-			cout << "Help :(" << endl;
+			cout << "No" << endl;
 		else
-			cout << "Youpiii" << endl; 
+			cout << "Yes" << endl; 
 		 
 		cout << endl;
 

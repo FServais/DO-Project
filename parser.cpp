@@ -39,7 +39,6 @@ DataModel::DataModel(const char* datafile, const char* freq_file, const char* bi
 	
 		//Get alphabet
 		getline(input, tmp);
-		//this->alphabet = tmp.substr(3);
 		
 		//Hands sr and sl	
 		getline(input, tmp);
@@ -73,8 +72,6 @@ DataModel::DataModel(const char* datafile, const char* freq_file, const char* bi
 		}
 		this->vl = tmp3;
 
-		//getline(input, tmp);
-		//this->vowelsNumber = atoi(tmp.substr(3).c_str());
 		this->vowelsNumber = this->vowels.size();
 
 		//Finger and strength
