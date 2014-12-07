@@ -59,7 +59,7 @@
 
 \section{Data}
 
-The data listed below are the ones from the Integer Model that we have use in the first report.
+The data listed below are the ones from the Integer Model that we have used in the first report.
 \begin{itemize}		
 	\item $sl_{k} = \left\{ 
 	\begin{array}{ll}
@@ -93,27 +93,23 @@ The data listed below are the ones from the Integer Model that we have use in th
 	\item $d_k$ : distance that the finger attributed to the key $k$ has to cross to reach that key.
 \end{itemize}
 
-Data's Collect : \\
+	\subsection{Data's collect}
 
-Concerning the data related to the keyboard ($sl_{k}$, $sr_{k}$, $d_{k}$) we have based our analysis on the keyboard present on the BEPO graphic in the assignment paper. \\
-The distance is calculated as the number of "moves" from the home row the finger has to do. There is no diagonal moves. \\
+Concerning the data related to the keyboard ($sl_{k}$, $sr_{k}$, $d_{k}$), we have based our analysis on the keyboard present on the BEPO graphic in the assignment paper. The distance is calculated as the number of "moves" from the home row the finger has to do. There is no diagonal moves. 
 
-For the strength of the finger we have arbitrary decided that thumb will be 0,  the index will  be 0.75 the middle finger 1, the annular 0.5 and the auricular 0.1. \\
+\paragraph{}
 
-We have match each key with a finger, so with the strength of the finger associated we can construct $ks_{k}$. \\
+For the strength of the fingers, we have arbitrarily decided that, on a scale of 1, the index will be 0.75, the middle finger 1, the ring finger 0.5 and the little finger 0.1. We have also matched each key with a finger. With the strength of the finger associated, we can thus construct $ks_{k}$.
 
-To collect the frequencies of the letters apparition and the bi-grams we have use the NGramExtraction tool from Deception.\\
-To obtain the alphabet that we will use we just use the 47 letters and characters that have the highest number of occurrence. (47 is the number of key in our keyboard)\\
-Then we "norm" the number of occurrence of each letter by the total to have the frequency of each letter.\\
-We also norm the bi-gram so that the sum of each bi-gram frequency starting by a specified letter make always 1.\\
+\paragraph{}
 
-Data file organisation : \\
-The file of data (named datas) is structured to be human readable, the first word is the name of the variable then the content (note: it has to be in this order for the parser program).
-The data do not have the same format as in the model, for example it's the number of the key that is indicated in the sl, sr vectors. The parser translate it into binary data. We have do this in that way to avoid errors and to keep the data file readable.
-fs represent the finger strength and the kbX the key associated to a certain finger (no key are for the thumbs).
+To collect the frequencies of the appearance of the letters and the bi-grams, we have used the NGramExtraction tool from Deception. To obtain the alphabet that we used, we just take the 47 characters that have the highest number of occurrence (47 is the number of keys in our keyboard). Then we divide the number of occurrence of each letter by the total number of occurences to have the frequency of each letter. We also "normalize" the bi-gram so that the sum of each bi-gram frequency starting by a specified letter makes always 1.\\
 
+	\subsection{Data file organisation}
 
-
+The file of data (named \texttt{data}) is structured to be also human readable, the first word is the name of the variable, which is followed by its content (note that it has to be in a specified order for the parser program).
+The data do not have necessarily the same format as in the model, for example for $sl$ and $sr$, it's the number of the key that is indicated. The parser translates it into binary data. We have done this in that way to avoid errors and to keep the data file readable.
+$fs$ represent the finger strength and $kb<x>$ the key associated to a certain finger (there is no key for the thumbs).
 
 
 
@@ -180,7 +176,7 @@ fs represent the finger strength and the kbX the key associated to a certain fin
 To obtain an optimal keyboard related to our model by using the \textbf{row generation} method. To implement that method, we use 2 concepts that are present in Gurobi : the lazy constraint and the callback.
 \paragraph{}
 The lazy constraints are the constraints that are less likely to be violated, so they are not contained in the set of the beginning but are added as we go along the execution of the solver. In order to do that, we use the callback system. We provide a class containing a \texttt{callback()} function which is called at key steps of the resolution.
-In our implementation, the function is called when the solver found a solution. This function checks if one of the lazy constraints is violated or not. If yes, we add it to the model by using the \texttt{addLazy()} function.
+In our implementation, the function is called when the solver found a solution. This function checks if one of the lazy constraints is violated or not. If yes (and is not yet added), we add it to the model by using the \texttt{addLazy()} function.
 \paragraph{}
 The constraints that are considered lazy are these one : $\forall i,j$,
 \begin{itemize}
@@ -193,16 +189,34 @@ The constraints that are considered lazy are these one : $\forall i,j$,
 	\item $a_{i,j} \leq 2 - \sum_k kb_{k,i} \cdot sl_k - \sum_k kb_{k,j} \cdot sl_k$
 \end{itemize}
 \paragraph{}
-
-
+It represents a total of $4 * 47 * 47 = 8836$ constraints.
 
 \section{Results}
-\begin{tabular}{cccccccccccccccccccccccccccccccccccccccccccccc}
-é & & â & & ê & & « & & ( & & » & & j & & z & & x & & f & & ô & & û & \\
- & à & & , & & ! & & : & & ? & & v & & h & & c & & s & & g & & ) & & ù\\
-  & & . & & o & & u & & e & & a & & l & & t & & - & & r & & n & & b & & ç\\
-î & & è & & i & & y & & \_ & & ; & & p & & ' & & m & & d & & q & & & \\
-\end{tabular}
+
+	\subsection{French keyboard}
+
+\begin{itemize}
+	\item Sample : "Madame Bovary", Gustave Flaubert.
+\end{itemize}
+The result is shown \textsc{Figure} 1.
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=1]{images/Francais.png}
+	\caption{Keyboard : French}
+\end{figure}
+
+There are the numbered results : 
+\begin{center}
+	\begin{tabular}{r|c}
+		Objective function & 123.286\\
+		Row 1 & 3.67 \%\\
+		Row 2 & 16.89 \%\\
+		Row 3 & 60.65 \%\\
+		Row 4 & 18.75 \%\\
+		Time & 1024 sec
+	\end{tabular}
+\end{center}
+
 
 \section{Improvements}
 
