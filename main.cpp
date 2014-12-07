@@ -87,8 +87,8 @@ int main(int argc, char const *argv[])
 	else{
 		cout << "Usage : ./main <count of symbols file> <count of bigrams file>" << endl;
 		cout << "Default sample text : Flaubert" << endl;
-		freq1File = "fl-out1.txt";
-		freq2File = "fl-out2.txt";
+		freq1File = "Datafiles/fl-out1.txt";
+		freq2File = "Datafiles/fl-out2.txt";
 	}
 
 	// Datamodel m(<data file>, <count of symbols file>, <count of bigrams file>)
