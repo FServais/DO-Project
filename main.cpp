@@ -27,7 +27,7 @@ void frequencyZone (vector<vector<GRBVar> >& kb, vector<double>& fr, vector<int>
 				rows[row] += fr[l];
 			
 				//Hand
-				if(sl[k])
+				if(sl[k]) 
 					left += fr[l];
 				else
 					right += fr[l];
@@ -200,7 +200,7 @@ int main(int argc, char const *argv[])
 
 		model.setObjective(objFunction, GRB_MINIMIZE);
 
-		/**
+		/**  
 		 * Contraints
 		 */
 		cout << "Creating constraints" << endl;
@@ -263,6 +263,16 @@ int main(int argc, char const *argv[])
 			model.addConstr(a[i][i] == 0, ss.str());
 		}
 
+		for (int i = 0; i < sizeAlphabet; ++i)
+		{
+			for (int j = 0; j < sizeAlphabet; ++j)
+			{
+				stringstream ss;
+				ss << "a_" << i << "_" << j << " constraint";
+				model.addConstr(a[i][j] == a[j][i], ss.str());
+			}
+		}
+
 		Callback cb(sizeAlphabet, kb, vl, a, sl);
 		model.setCallback(&cb);
 
@@ -271,10 +281,10 @@ int main(int argc, char const *argv[])
 		/**
 		 * Print
 		 */
-		/*	
-		cout << "======== kb ========" << endl;
+		
+		cout << "======== kb ========" << endl; 
 		for (int k = 0; k < numberKeys; ++k)
-			for (int l = 0; l < sizeAlphabet; ++l)
+			for (int l = 0; l < sizeAlphabet; ++l) 
 				cout << kb[k][l].get(GRB_StringAttr_VarName) << " = " << kb[k][l].get(GRB_DoubleAttr_X) << endl;
 	
 		cout << endl;
@@ -286,9 +296,9 @@ int main(int argc, char const *argv[])
 
 		cout << "======== a ========" << endl;
 		for (int i = 0; i < sizeAlphabet; ++i)
-			for (int j = 0; j < sizeAlphabet; ++j)
+			for (int j = 0; j < sizeAlphabet; ++j) 
 				cout << a[i][j].get(GRB_StringAttr_VarName) << " = " << a[i][j].get(GRB_DoubleAttr_X) << endl;
-		*/
+		
 		cout << endl;
 		
 		cout << "Objective function = " << model.get(GRB_DoubleAttr_ObjVal) << endl;
@@ -302,7 +312,16 @@ int main(int argc, char const *argv[])
 
 		cout << "Statistic results : " << endl;
 		frequencyZone(kb, fr, sl);
-		
+		cout << endl; 
+
+		if (!cb.isSatisfied())
+			cout << "Help :(" << endl;
+		else
+			cout << "Youpiii" << endl; 
+		 
+		cout << endl;
+
+
 	} catch(GRBException e){
 		cout << "Error code = " << e.getErrorCode() << endl;
 		cout << e.getMessage() << endl;
