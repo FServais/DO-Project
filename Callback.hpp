@@ -8,6 +8,7 @@ private:
 	GRBVar vl;
 
     int sizeAlphabet;
+    int total_added_constraints, total_constraints;
 
     // Keep track of what has been added
 	vector<vector<bool> > XOR1Added, XOR2Added, XOR3Added, XOR4Added;
@@ -109,6 +110,7 @@ public:
 	 */
 	Callback(int _sizeAlphabet, vector<vector<GRBVar> > _kb, GRBVar _vl, vector<vector<GRBVar> > _a, vector<int> _sl) : 
 			sl(_sl), kb(_kb), vl(_vl), a(_a), sizeAlphabet(_sizeAlphabet),
+			total_added_constraints(0), total_constraints(4*_sizeAlphabet*_sizeAlphabet),
 			XOR1Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR2Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR3Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false)), XOR4Added(_sizeAlphabet, vector<bool>(_sizeAlphabet,false))
 	{
 
@@ -154,7 +156,7 @@ public:
 protected: 
 	void callback(){
 		try{
-			if (where == GRB_CB_MIPSOL)
+			if (where == GRB_CB_MIPSOL && total_added_constraints < 4*sizeAlphabet*sizeAlphabet)
 			{
 				int countAdded = 0;
 				for (int i = 0; i < sizeAlphabet && countAdded < 16; ++i)
@@ -194,6 +196,8 @@ protected:
 						}
 					}
 				}
+
+				total_added_constraints += countAdded;
 			}
 			
 		} catch (GRBException e){
