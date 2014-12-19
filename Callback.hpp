@@ -199,6 +199,8 @@ protected:
 
 				total_added_constraints += countAdded;
 			}
+			else if(total_added_constraints >= 4*sizeAlphabet*sizeAlphabet)
+				cout << "Total number of constraints reached : " << total_added_constraints << endl;
 			
 		} catch (GRBException e){
 			cout << "Error number: " << e.getErrorCode() << endl;
