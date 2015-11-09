@@ -1,12 +1,11 @@
 # Authors
 (2014)
-
 - Fabrice Servais
 - Laurent Vanosmael
 
 # Program
 ## Goal
-The goal of the program is to provide the best keyboard layout regarding to an input text.
+The goal of the program is to provide the best keyboard layout regarding to an input text. This project has been made in the context of a student project for the course of *Discrete Optimization* at *ULg*. 
 
 ## Compile
 Use `make` command to compile.
