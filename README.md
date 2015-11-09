@@ -1,7 +1,8 @@
 # Authors
 (2014)
-- Laurent Vanosmael
+
 - Fabrice Servais
+- Laurent Vanosmael
 
 # Program
 ## Goal
