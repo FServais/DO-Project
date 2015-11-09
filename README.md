@@ -8,7 +8,7 @@
 The goal of the program is to provide the best keyboard layout regarding to an input text.
 
 ## Compile
-`make`
+Use `make` command to compile.
 ### Note
 2 Makefile are provided depending on the platform, the "default" Makefile is for MacOS. Furthermore, the Makefile may not work depending on the version of Gurobi (v5.6.3 is used))
 
